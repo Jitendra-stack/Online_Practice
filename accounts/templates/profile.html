@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">User Profile</h3>
+          </div>
+          <div class="card-body bg-dark">
+            <!-- Profile Picture and Username -->
+            <div class="d-flex align-items-center mb-4">
+              {% comment %} <img src="{% static 'path/to/profile-pic.png' %}" alt="Profile Picture" class="rounded-circle me-3" width="80" height="80"> {% endcomment %}
+              <div>
+                <h5 class="mb-0 text-white">{{ user.username }}</h5>
+                {% comment %} <p class="text-muted">{{ user.email }}</p> {% endcomment %}
+              </div>
+            </div>
+
+            <!-- Additional Profile Details -->
+            <div class="mb-3 text-white">
+              <h6 >Personal Information</h6>
+              <p><strong>Full Name:</strong></p>
+              <p><strong>Joined on:</strong></p>
+            </div>
+
+            {% comment %} <!-- Actions -->
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'edit-profile' %}" class="btn btn-outline-primary">Edit Profile</a>
+              <a href="{% url 'logout-user' %}" class="btn btn-outline-danger">Logout</a>
+            </div> {% endcomment %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

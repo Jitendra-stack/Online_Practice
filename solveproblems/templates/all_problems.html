@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}problems{% endblock %}
+
+{% block content %}
+<div class="container list-group list-group-flush bg-dark">
+  {% for problem in problems %}
+    <a href="{{ problem.id }}" class="list-group-item list-group-item-action bg-dark d-flex justify-content-between align-items-center" style="color:white;">
+      <!-- Problem Title -->
+      <span>{{ problem.title }}</span>
+      <!-- Additional Info -->
+      <div class="d-flex flex-column align-items-end text-muted" style="font-size: 0.9em;">
+        <span style="color:white;">{{ problem.tag }}</span>
+        <span style="color:white;">{{ problem.difficulty }}</span>
+      </div>
+    </a>
+  {% endfor %}
+</div>
+{% endblock %}

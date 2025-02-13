@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Problem{% endblock %}
+
+{% block content %}
+{% if not is_authenticated %}
+<div class="alert alert-warning alert-dismissible fade show mx-auto text-center" role="alert" style="max-width: 350px; height: 60px">
+    Login to submit solution!!
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+     
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <div class="container d-flex justify-content-center align-items-center mt-1">
+        
+        <button type="submit" name="run_code" class="btn bg-dark mx-2" style="color:#8b9197;"><i class="bi bi-play-fill"></i> Run</button>
+        <!-- Submit Button -->
+        <button type="submit" name="submit_code" class="btn bg-dark" style="color:#28c244;"><i class="bi bi-cloud-arrow-up"></i> Submit</button>
+    </div>
+
+   <div class="row">
+        <div class="col-md-6 ps-5">
+            <div class="form-group">
+                <div class="d-flex mb-3">
+                    <button id="descriptionButton" type="button" class="btn bg-dark me-2" style="color:white;">Description</button>
+                    <button id="submissionButton" type="button" class="btn btn-secondary" style="color:white;">Submission</button>
+                </div>
+
+                <div id="displaySection" class="form-group bg-dark" style="border-radius: 0.25rem;border: 1px solid #ced4da;" >
+                <div id="description-text">
+                    <textarea id="description" class="form-control bg-dark" rows="20" readonly style="color:white;">{{ problem.description }}</textarea>
+                </div>
+                <div id="submissions-text" class="card bg-dark text-white overflow-auto" style="display: none; height: 500px;">
+                    <div class="card-body">
+                        {% if submissions %}
+                            <ul class="list-group list-group-flush">
+                                {% for submission in submissions %}
+                                    <li class="list-group-item d-flex justify-content-between bg-dark text-white">
+                                        <span>{{ forloop.counter }}- {{ submission.language }}</span>
+                                        <span>{{ submission.verdict }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="mb-0">No submissions yet.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+               </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 pe-5">
+            <div class="form-group mt-2">
+                <!-- Buttons for Code and Test Cases -->
+                <button id="codeButton" type="button" class="btn mb-3 bg-dark" style="color:white;">Code</button>
+                <button id="testCasesButton" type="button" class="btn btn-secondary mb-3">Test Cases</button>
+            </div>
+
+            <!-- Single section to show either Code or Test Cases -->
+            <div id="displaySection" class="form-group bg-dark" style="border-radius: 0.25rem;border: 1px solid #ced4da;" >
+                {% comment %} style="border: 1px solid #ced4da;" {% endcomment %}
+                <!-- Code Textarea, with the code retained after submission -->
+                <!-- Select Language -->
+                <select name="language" id="id_language" class="form-select m-2 bg-dark" style="width: auto;color:white;display:none;" required>
+                    <option value="" disabled>Select Language</option>
+                    <option value="py" {% if form.language.value == "py" or selected_language == "py" %}selected{% endif %}>Python</option>
+                    <option value="c" {% if form.language.value == "c" or selected_language == "c" %}selected{% endif %}>C</option>
+                    <option value="cpp" {% if form.language.value == "cpp" or selected_language == "cpp" %}selected{% endif %}>C++</option>
+                </select>
+                <textarea name="code" id="id_code" class="form-control bg-dark no-border" rows="15" style="color:white; display:none;">{{ form.code.value|default:code_value }}</textarea>
+
+                <!-- Test Cases section (Initially Hidden) -->
+                <div id="testCasesSection" >
+                    <!-- Dynamic buttons for each test case -->
+                    <div class="m-2">
+                        {% for test_case in test_cases %}
+                          {% if test_case.result %}
+                            <button type="button" class="btn btn-success testCaseButton" data-input="{{ test_case.input }}" data-output="{{ test_case.output }}">
+                                Test Case {{ forloop.counter }}
+                            </button>
+
+                          {%elif  test_case.result == None %}
+
+                            <button type="button" class="btn btn-secondary testCaseButton" data-input="{{ test_case.input }}" data-output="{{ test_case.output }}">
+                                Test Case {{ forloop.counter }}
+                            </button>
+                          {%else %}
+                            <button type="button" class="btn btn-warning testCaseButton" data-input="{{ test_case.input }}" data-output="{{ test_case.output }}">
+                                Test Case {{ forloop.counter }}
+                            </button>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <textarea id="test_cases" class="form-control bg-dark no-border" rows="15" readonly style="color:white;"></textarea>
+                </div>
+            </div>
+        </div>
+   </div>
+</form>
+
+<script>
+    // JavaScript to toggle between Code and Test Cases sections
+    const descriptionButton = document.getElementById('descriptionButton');
+    const submissionButton = document.getElementById('submissionButton');
+    const codeButton = document.getElementById('codeButton');
+    const testCasesButton = document.getElementById('testCasesButton');
+    const codeTextarea = document.getElementById('id_code');
+    const testCasesSection = document.getElementById('testCasesSection');
+    const runCodeButton = document.querySelector('button[type="submit"]');
+    const language = document.getElementById('id_language');
+    const descriptionText = document.getElementById("description-text")
+    const submissionText = document.getElementById("submissions-text")
+
+    descriptionButton.addEventListener('click', function() {
+          descriptionText.style.display =  'block';
+          submissionText.style.display = 'none';
+    });
+    submissionButton.addEventListener('click', function() {
+        submissionText.style.display =  'block';
+        descriptionText.style.display = 'none';
+    });
+    // Show Code textarea and hide Test Cases
+    codeButton.addEventListener('click', function() {
+        codeTextarea.style.display = "block";  // Show code
+        language.style.display = "block";  
+        testCasesSection.style.display = "none";  // Hide test cases section
+    });
+
+    // Show Test Cases section and hide Code textarea
+    testCasesButton.addEventListener('click', function() {
+        testCasesSection.style.display = "block";  // Show test cases section
+        codeTextarea.style.display = "none";  // Hide code
+        language.style.display = "none";
+    });
+    // Trigger testCasesButton event when Run Code is pressed
+    runCodeButton.addEventListener('click', function() {
+        testCasesButton.click();  // Simulate click on the Test Cases button
+    });
+
+    // Add event listeners to all test case buttons
+    document.querySelectorAll('.testCaseButton').forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.getAttribute('data-input');
+            const output = this.getAttribute('data-output');
+            document.getElementById('test_cases').value = `Input: ${input}\nOutput: ${output}`;  // Load selected test case details
+        });
+    });
+</script>
+{% endblock %}

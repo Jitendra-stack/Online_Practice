@@ -1,0 +1,54 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}Compiler{% endblock %}
+
+{% block content %}
+<h3 class="container my-2">Online Compiler</h1>
+<form method="post" class="container">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6">
+
+            <div class="form-group col-md-3">
+                <select name="language" id="id_language" class="form-control container bg-dark" style="color:white;"required>
+                    <option value="" disabled selected>Select Language</option>
+                    <option value="py" {% if form.language.value == "py" %}selected{% endif %}>Python</option>
+                    <option value="c" {% if form.language.value == "c" %}selected{% endif %}>C</option>
+                    <option value="cpp" {% if form.language.value == "cpp" %}selected{% endif %}>C++</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <button type="submit" class="btn bg-dark" style="color:#28c244;">Run Code</button>
+        </div>
+    <div>
+    <div class="row">
+        <!-- Left side: Code input (big box) -->
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="id_code">Code</label>
+                <textarea name="code" id="id_code" class="form-control bg-dark" rows="20" style="color:white;">{{ form.code.value|default_if_none:"" }}</textarea>
+            </div>
+        </div>
+
+        <!-- Right side: Input data and Output data stacked vertically -->
+        <div class="col-md-6">
+            <!-- Input data (full width on the right side) -->
+            <div class="form-group">
+                <label for="id_input_data">Input Data</label>
+                <textarea name="input_data" id="id_input_data" class="form-control bg-dark" rows="3" style="color:white;">{{ form.input_data.value|default_if_none:"" }}</textarea>
+            </div>
+
+            <!-- Output data (full width on the right side) -->
+            <div class="form-group">
+                <label for="id_output_data">Output Data</label>
+                <textarea id="id_output_data" class="form-control bg-dark" rows="15" style="color:white;" readonly>{{  form.output_data.value|default_if_none:"" }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    
+</form>
+{% endblock %}
