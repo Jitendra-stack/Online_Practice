@@ -14,6 +14,8 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "your-fallback-secret-key")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS.append(".onrender.com")  # Allow Render domain
+
 
 # Application definition
 
@@ -67,13 +69,14 @@ WSGI_APPLICATION = 'codeverse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DB_NAME", "codeverse_db"),
-        'USER': os.getenv("DB_USER", "codeverse_user"),
-        'PASSWORD': os.getenv("DB_PASSWORD", "secure_password"),
-        'HOST': os.getenv("DB_HOST", "localhost"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),  # Updated for Render
         'PORT': os.getenv("DB_PORT", "5432"),
     }
 }
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
