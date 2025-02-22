@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     'submit',
     'home',
     'solveproblems',
+    'whitenoise.runserver_nostatic',  # ✅ Ensure Whitenoise is installed
 ]
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.Users'
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ Added for static files
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,9 +111,10 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static Files
+# ✅ Static Files Fixes
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"  # ✅ Required for Whitenoise
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
