@@ -12,12 +12,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "your-fallback-secret-key")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "True") == "True"
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-# Properly configure ALLOWED_HOSTS
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-ALLOWED_HOSTS.append(".onrender.com")  # Ensure Render is included
-ALLOWED_HOSTS = list(set(ALLOWED_HOSTS))  # Remove duplicates if any
+# ✅ Fixed ALLOWED_HOSTS Handling
+DEFAULT_ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+
+# Ensure local development hosts are included when running locally
+if DEBUG:  
+    ALLOWED_HOSTS.extend(DEFAULT_ALLOWED_HOSTS)
+
+ALLOWED_HOSTS.append(".onrender.com")  # Ensure Render subdomains are included
+ALLOWED_HOSTS = list(set(ALLOWED_HOSTS))  # Remove duplicates
 
 # Application definition
 INSTALLED_APPS = [
@@ -66,10 +72,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'codeverse.wsgi.application'
 
-# Determine if running locally
+# ✅ Fixed Database Handling
 IS_LOCAL = DEBUG  # Using DEBUG to determine local/production
 
-# ✅ Fixed Database Configuration
 if IS_LOCAL:
     DATABASES = {
         'default': {
