@@ -1,8 +1,9 @@
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
 
-# Load environment variables from .env file (Ensure you create one)
+# Load environment variables from .env file
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,12 +14,12 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "your-fallback-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
+# Properly configure ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-ALLOWED_HOSTS.append(".onrender.com")  # Allow Render domain
-
+ALLOWED_HOSTS.append(".onrender.com")  # Ensure Render is included
+ALLOWED_HOSTS = list(set(ALLOWED_HOSTS))  # Remove duplicates if any
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -32,7 +33,7 @@ INSTALLED_APPS = [
     'solveproblems',
 ]
 
-# Specify custom user model
+# Custom User Model
 AUTH_USER_MODEL = 'accounts.Users'
 
 MIDDLEWARE = [
@@ -50,7 +51,7 @@ ROOT_URLCONF = 'codeverse.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Global templates directory
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,18 +66,29 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'codeverse.wsgi.application'
 
-# Database Configuration
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DB_NAME"),
-        'USER': os.getenv("DB_USER"),
-        'PASSWORD': os.getenv("DB_PASSWORD"),
-        'HOST': os.getenv("DB_HOST"),  # Updated for Render
-        'PORT': os.getenv("DB_PORT", "5432"),
-    }
-}
+# Determine if running locally
+IS_LOCAL = DEBUG  # Using DEBUG to determine local/production
 
+# ✅ Fixed Database Configuration
+if IS_LOCAL:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("DB_NAME", "default_db"),
+            'USER': os.getenv("DB_USER", "default_user"),
+            'PASSWORD': os.getenv("DB_PASSWORD", "default_password"),
+            'HOST': os.getenv("DB_HOST", "localhost"),  # ✅ DB_HOST fixed
+            'PORT': os.getenv("DB_PORT", "5432"),
+        }
+    }
+else:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv("DATABASE_URL"),
+            conn_max_age=600,  # Optimize DB connections
+            ssl_require=True  # Ensure secure connection
+        )
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -94,6 +106,7 @@ USE_TZ = True
 
 # Static Files
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -108,11 +121,15 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'django_errors.log',
         },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG' if DEBUG else 'ERROR',
             'propagate': True,
         },
     },
